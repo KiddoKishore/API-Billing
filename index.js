@@ -4,59 +4,110 @@ import csv from 'csv-parser';
 const result = [];
 const uniqueValues = new Set();
 const apiUserCount = {};
-let grandTotal = 0
+const client = [];
+const removeDuplicate = new Set();
+
+const api = {
+  "/v1/checkLiveness": {
+    10000: 0.06,
+    30000: 0.05,
+    100000: 0.04,
+    300000: 0.03,
+    500000: 0.02,
+    500001: 0.01
+  },
+  "/v1/matchFace": {
+    10000: 0.07,
+    30000: 0.06,
+    100000: 0.05,
+    300000: 0.04,
+    500000: 0.03,
+    500001: 0.03,
+  },
+};
+
+function clientData(data) {
+  const appId = data.appid
+  const transaction_id = data.transaction_id;
+    const api = data.originalurl;
+
+  // Check if the appId exists in the client object
+  if (!client[appId]) {
+    client[appId] = []; // Initialize array if not exists
+  }
+
+  // Create a unique key using appId, transaction_id, and api
+  const uniqueKey = `${appId}-${transaction_id}-${api}`;
+
+  // Remove the Duplicate values using transition_id, api Url and App id
+  if(!removeDuplicate.has(uniqueKey)){
+    removeDuplicate.add(uniqueKey);
+    client[appId].push(data); // Push data to array
+  }
+}
 
 function processData(data) {
     const transaction_id = data.transaction_id;
     const api = data.originalurl;
-    const uniqueKey = `${transaction_id}-${api}`;
+    const appId = data.appid
+
+    // Create a unique key using appId, transaction_id, and api
+    const uniqueKey = `${appId}-${transaction_id}-${api}`;
   
     // Remove the Duplicate values using transition_id and api Url
     if (!uniqueValues.has(uniqueKey)) {
       uniqueValues.add(uniqueKey);
-      result.push(data);
+      result.push(data); // Push data to array
       // Set the Number of Customer for every api
-      if (apiUserCount[api]) {
-        apiUserCount[api]++;
+      if (!apiUserCount[appId]) {
+        apiUserCount[appId] = {};
+    }
+    if (!apiUserCount[appId][api]) {
+        apiUserCount[appId][api] = 1;
     } else {
-        apiUserCount[api] = 1;
+        apiUserCount[appId][api]++;
     }
     }
 }
 
 // Set the charge amount using the Number of Customers uses the api
-function calculateRate(count, api) {
-    if (count < 10000) {
-      return api === '/v1/checkLiveness' ? 0.06 : 0.07;
-    } else if (count < 30000) {
-      return api === '/v1/checkLiveness' ? 0.05 : 0.06;
-    } else if (count < 100000) {
-      return api === '/v1/checkLiveness' ? 0.04 : 0.05;
-    } else if (count < 300000) {
-      return api === '/v1/checkLiveness' ? 0.03 : 0.04;
-    } else if (count < 500000) {
-      return api === '/v1/checkLiveness' ? 0.02 : 0.03;
-    } else {
-      return api === '/v1/checkLiveness' ? 0.01 : 0.03;
-    }
+function calculateRate(count, apiName) {
+  const apiData = api[apiName]
+  let numberOfCustomer = count
+  let totalPrice = 0
+    Object.keys(apiData).forEach((api) => {
+      const NumberOfCount = parseInt(api) // Make this Object Key String into Number
+      if (numberOfCustomer >= NumberOfCount){
+        totalPrice += NumberOfCount * apiData[api] // Multiple
+        numberOfCustomer -= NumberOfCount
+      } else {
+        totalPrice += numberOfCustomer * apiData[api];
+        numberOfCustomer -= numberOfCustomer
+      }
+      // console.log(totalPrice)
+    })
+    return totalPrice
   }
 
 fs.createReadStream('Happy Bank- January Consumption.csv') // Happy Bank- January Consumption.csv
     .pipe(csv({}))
     .on('error', (err) => console.log(err))
     .on('data', (data) => {
+        clientData(data)
         processData(data);
     })
     .on('end', () => {
-      // Loop the Customers Count of every api
-        Object.keys(apiUserCount).forEach(api => {
-        console.log(`Total Number of Customers in ${api}:`,apiUserCount[api])
-        const count = apiUserCount[api];
-        // Get the Charge amount of the api
-        const rate = calculateRate(count, api);
-        console.log(`Charge Amount of ${api}:`, rate)
-        // Calculate the Number of Customers and Charge amount of the api
-        grandTotal += count * rate;
-        });
-    console.log('Total Charge Amount:',grandTotal)
+      // Iterate through the apiUserCount object
+      Object.keys(apiUserCount).forEach((app) => {
+        console.log('For Client ID',app);
+        let grandTotal = 0;
+        // Iterate through the Api Name object
+        Object.keys(apiUserCount[app]).forEach((apiName) => {
+          console.log(`Total Number of Customers in ${apiName}:`,apiUserCount[app][apiName])
+          const count = apiUserCount[app][apiName];
+          const rate = calculateRate(count, apiName); // Call the calculateRate function to calculate the number of customers and charge amount
+          grandTotal += rate; 
+        })
+        console.log('Total Charge Amount:', grandTotal);
+      });
 });
