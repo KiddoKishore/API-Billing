@@ -6,6 +6,7 @@ const uniqueValues = new Set();
 const apiUserCount = {};
 const client = [];
 const removeDuplicate = new Set();
+const finalResult = [];
 
 const api = {
   "/v1/checkLiveness": {
@@ -100,14 +101,20 @@ fs.createReadStream('Happy Bank- January Consumption.csv') // Happy Bank- Januar
       // Iterate through the apiUserCount object
       Object.keys(apiUserCount).forEach((app) => {
         console.log('For Client ID',app);
+        if(!finalResult.app){
+          finalResult[app] = {}
+        }
         let grandTotal = 0;
         // Iterate through the Api Name object
         Object.keys(apiUserCount[app]).forEach((apiName) => {
           console.log(`Total Number of Customers in ${apiName}:`,apiUserCount[app][apiName])
           const count = apiUserCount[app][apiName];
           const rate = calculateRate(count, apiName); // Call the calculateRate function to calculate the number of customers and charge amount
+          finalResult[app][apiName] = {'numberOfCustomers' : apiUserCount[app][apiName], 'total' : rate}
           grandTotal += rate; 
         })
+        finalResult[app]['totalPrice'] = grandTotal
         console.log('Total Charge Amount:', grandTotal);
       });
+      console.log(finalResult)
 });
