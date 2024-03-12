@@ -1,7 +1,7 @@
 import fs from "fs";
 import csv from "csv-parser";
-import processData from "./rmDuplicate.js";
-import calculateRate from "./calucate.js";
+import processData from "./helpers/data.js";
+import calculateRate from "./helpers/calucate.js";
 
 const apiUserCount = {};
 const client = [];
