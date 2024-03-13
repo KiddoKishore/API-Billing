@@ -1,4 +1,4 @@
-import calculateRate from "./calucate.js";
+import calculateRate from "./calculate.js";
 
 const IterateData = (apiUserCount,finalResult,api) => {
     // Iterate through the apiUserCount object for client Id
@@ -15,6 +15,10 @@ const IterateData = (apiUserCount,finalResult,api) => {
             apiUserCount[app][apiName]
           );
           const count = apiUserCount[app][apiName];
+
+          // if(!api['api'][apiName]){
+          //   return `${apiName} is Not Found`
+          // }
   
           // Call the calculateRate function to calculate the number of customers and charge amount
           const rate = calculateRate(count, apiName, api);
