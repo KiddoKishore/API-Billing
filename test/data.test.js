@@ -11,8 +11,15 @@ describe('processData function', () => {
         originalurl: '/v1/checkLiveness',
         statuscode: 200,
       };
+
+      const api = {
+        "/v1/checkLiveness":{
+          10000: 0.06
+        },
+        "statusCode": [ 200 ]
+      }
   
-      processData(data, client, removeDuplicate, apiUserCount);
+      processData(data, client, removeDuplicate, apiUserCount,api);
   
       // Write your assertions to verify the updates in client and apiUserCount
       expect(client['appId']).toHaveLength(1);
@@ -30,8 +37,15 @@ describe('processData function', () => {
         originalurl: '/v1/checkLiveness',
         statuscode: 400,
       };
+
+      const api = {
+        "/v1/checkLiveness":{
+          10000: 0.06
+        },
+        "statusCode": [ 200 ]
+      }
   
-      processData(data, client, removeDuplicate, apiUserCount);
+      processData(data, client, removeDuplicate, apiUserCount,api);
       // Write your assertions to verify the updates in client and apiUserCount
       expect(client).toHaveLength(0);
       expect(apiUserCount).toEqual({});
