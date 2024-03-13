@@ -13,14 +13,17 @@ describe('IterateData function', () => {
     };
 
     const api = {
-      '/v1/checkLiveness': {
-        10000: 0.06,
-        30000: 0.05,
+      "api": {
+        '/v1/checkLiveness': {
+          10000: 0.06,
+          30000: 0.05,
+        },
+        '/v1/matchFace': {
+          10000: 0.07,
+          30000: 0.06,
+        },
       },
-      '/v1/matchFace': {
-        10000: 0.07,
-        30000: 0.06,
-      },
+      "statusCode": [200, 422]
     };
 
     const finalResult = {};
