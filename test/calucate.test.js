@@ -3,10 +3,13 @@ import calculateRate from '../helpers/calucate.js';
 describe('calculateRate function', () => {
   test('it should calculate the total charge amount correctly', () => {
     const api = {
+      "api" :{
       '/v1/checkLiveness': {
         10000: 0.06,
         30000: 0.05,
       },
+      "statusCode": [200, 422]
+    }
     };
 
     const count = 25000; // assuming 25,000 customers
